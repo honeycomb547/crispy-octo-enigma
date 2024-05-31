@@ -1,45 +1,67 @@
-import Image from "next/image";
-import { LOVENSE } from '../config';
+import axios from 'axios';
+import io from 'socket.io-client';
+import { useEffect, useState } from 'react';
 
 async function getLovenseAuthToken() {
-  const res = await fetch('http://localhost:3000/api/data', {
-    method: 'POST'
+  const res = await axios.post('http://localhost:3000/api/get-auth', {
   });
-  // The return value is *not* serialized
-  // You can return Date, Map, Set, etc.
- 
-  if (!res.ok) {
+
+  if (res.status !== 200) {
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')
   }
- 
-  return res.json()
+
+  return res.data;
 };
 
 async function getLovenseSocketURL() {
-  const lovenseAuthToken = await getLovenseAuthToken()
-  const res = await fetch('http://localhost:3000/api/socket', {
-    method: 'POST',
-    body: JSON.stringify({
-      platform: LOVENSE.LOVENSE_PLATFORM,
-      authToken: lovenseAuthToken.message.data.authToken,
-
-    }),
+  const lovenseAuthToken = await getLovenseAuthToken();
+  const res = await axios.post('http://localhost:3000/api/get-socket', {
+    authToken: lovenseAuthToken.message?.data?.authToken,
+  }, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.
- 
-  if (!res.ok) {
+
+  if (res.status !== 200) {
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data');
   }
- 
-  return res.json()
+
+  return res.data;
 
 };
 
-export default async function Home() {
-  
+async function getSocket(){
+  const socketURL = await getLovenseSocketURL();
+  console.log(socketURL);
+  const res = await axios.post('http://localhost:3000/api/lovense-socket', {
+    socketURL: socketURL,
+  }, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+
+  if (res.status !== 200) {
+    // This will activate the closest `error.js` Error Boundary
+    throw new Error('Failed to fetch data');
+  }
+
+  return res.data;
+}
+
+export default async function Main({}) {
+
+  const socket = await getSocket();
+  console.log(socket);
+
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
