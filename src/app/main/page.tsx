@@ -1,9 +1,10 @@
 import axios from 'axios';
-import io from 'socket.io-client';
-import { useEffect, useState } from 'react';
+import io  from 'socket.io-client';
+
+const ackId = '24fsf2536fs7324hj647f5';
 
 async function getLovenseAuthToken() {
-  const res = await axios.post('http://localhost:3000/api/get-auth', {
+  const res = await axios.post('http://localhost:3000/api/get-lovense-auth-token', {
   });
 
   if (res.status !== 200) {
@@ -16,7 +17,7 @@ async function getLovenseAuthToken() {
 
 async function getLovenseSocketURL() {
   const lovenseAuthToken = await getLovenseAuthToken();
-  const res = await axios.post('http://localhost:3000/api/get-socket', {
+  const res = await axios.post('http://localhost:3000/api/get-lovense-socket-url', {
     authToken: lovenseAuthToken.message?.data?.authToken,
   }, {
     headers: {
@@ -29,38 +30,35 @@ async function getLovenseSocketURL() {
   if (res.status !== 200) {
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data');
-  }
-
-  return res.data;
+  };
+  return res.data.message.data.socketIoUrl;
 
 };
 
-async function getSocket(){
+
+export async function getSocket() {
   const socketURL = await getLovenseSocketURL();
-  console.log(socketURL);
-  const res = await axios.post('http://localhost:3000/api/lovense-socket', {
-    socketURL: socketURL,
-  }, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
+  const socket = io(socketURL, { path: '/developer.io', transports: ['websocket'] });
+
+
+  socket.on('connect', () => {
+      socket.emit('my event', {data: "I'm connected!"});
   });
-  // The return value is *not* serialized
-  // You can return Date, Map, Set, etc.
 
-  if (res.status !== 200) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data');
-  }
+  socket.emit('basicapi_get_qrcode_ts', {
+    ackId: ackId
+  });
 
-  return res.data;
+  return socket;
 }
 
-export default async function Main({}) {
-
+export default async function Main() {
   const socket = await getSocket();
-  console.log(socket);
-
+  
+  socket.on('basicapi_update_device_info_tc', res => {
+    let resData = res ? JSON.parse(res) : {}
+    console.log(resData)
+  });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -72,73 +70,10 @@ export default async function Main({}) {
 
 
       <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <button>Stop Vibe</button>
+      <button style={{ marginLeft: 10 }}>Resume Vibe</button>
+      <button style={{ marginLeft: 10 }}>Reload</button>
+      <button style={{ marginLeft: 10 }}>Open Overlay Page</button>
       </div>
     </main>
   );

@@ -12,11 +12,15 @@ export async function POST(req: NextRequest) {
     try {
         const ackId = '24fsf2536fs7324hj647f5'
 
+        socket.on('connect', () => {
+            socket.emit('my event', {data: "I'm connected!"});
+        });
+
         socket.emit('basicapi_get_qrcode_ts', {
           ackId: ackId
         })
         
-        socket.on('basicapi_get_qrcode_tc', res => {
+        socket.on('basicapi_get_qrcode_tc', (res) => {
           let resData = res ? JSON.parse(res) : {}
           if (resData.data && resData.data.ackId === ackId) {
             return NextResponse.json({ socketUrl: data.socketURL, resData }, { status: 200 });
