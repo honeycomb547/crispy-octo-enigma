@@ -1,4 +1,4 @@
-export default function HomePage() {
+export default function ChatPage() {
     return (
       <div>
         <h1>Welcome to MyApp!</h1>
@@ -6,3 +6,4 @@ export default function HomePage() {
       </div>
     );
   }
+  
