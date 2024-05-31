@@ -1,5 +1,17 @@
 import axios from 'axios';
-import io  from 'socket.io-client';
+import Link from 'next/link';
+import io from 'socket.io-client';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 const ackId = '24fsf2536fs7324hj647f5';
 
@@ -42,7 +54,7 @@ export async function getSocket() {
 
 
   socket.on('connect', () => {
-      socket.emit('my event', {data: "I'm connected!"});
+    socket.emit('my event', { data: "I'm connected!" });
   });
 
   socket.emit('basicapi_get_qrcode_ts', {
@@ -53,27 +65,49 @@ export async function getSocket() {
 }
 
 export default async function Main() {
-  const socket = await getSocket();
-  
-  socket.on('basicapi_update_device_info_tc', res => {
-    let resData = res ? JSON.parse(res) : {}
-    console.log(resData)
-  });
+  // const socket = await getSocket();
+
+  // socket.on('basicapi_update_device_info_tc', res => {
+  //   let resData = res ? JSON.parse(res) : {}
+  //   console.log(resData)
+  // });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Meme
-        </p>
-      </div>
-
 
       <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-      <button>Stop Vibe</button>
-      <button style={{ marginLeft: 10 }}>Resume Vibe</button>
-      <button style={{ marginLeft: 10 }}>Reload</button>
-      <button style={{ marginLeft: 10 }}>Open Overlay Page</button>
+        <Card className="w-[350px]">
+          <CardHeader>
+            <CardTitle>Lovense Control</CardTitle>
+            <CardDescription>Control the Lovense Here!</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form>
+              <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="currentvibe">Current Vibe Level</Label>
+                  <h3 id='currentvibe'></h3>
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="chatoverride">Chat Override</Label>
+                  <Input id="chatoverride" placeholder="Override Chat Input Here!" />
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="control">Controls</Label>
+                  <Button>Stop Vibe</Button>
+                  <Button>Resume Vibe</Button>
+                  <Button>Reload</Button>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button>Override Chat</Button>
+            <Link href="/overlay" passHref>
+            <Button variant="secondary" >Stream Overlay</Button>
+            </Link>
+          </CardFooter>
+        </Card>
       </div>
     </main>
   );
