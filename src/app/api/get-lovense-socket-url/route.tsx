@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LOVENSE } from '../../config';
+import { LOVENSE } from '../../../config';
 import axios from 'axios';
 
 export async function POST(req: NextRequest) {
@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
 
     try {
         const data = await req.json();
-        console.log("data:" + data);
 
         // Make the POST request with the data
         const response = await axios.post('https://api.lovense-api.com/api/basicApi/getSocketUrl', {
